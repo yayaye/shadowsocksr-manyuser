@@ -79,8 +79,8 @@ function pre_install(){
     fi
     # Set ShadowsocksR config password
     echo "Please input password for ShadowsocksR:"
-    read -p "(Default password: www.91yun.org):" shadowsockspwd
-    [ -z "$shadowsockspwd" ] && shadowsockspwd="www.91yun.org"
+    read -p "(Default password: yun654321):" shadowsockspwd
+    [ -z "$shadowsockspwd" ] && shadowsockspwd="yun654321"
     echo
     echo "---------------------------"
     echo "password = $shadowsockspwd"
@@ -90,8 +90,8 @@ function pre_install(){
     while true
     do
     echo -e "Please input port for ShadowsocksR [1-65535]:"
-    read -p "(Default port: 8989):" shadowsocksport
-    [ -z "$shadowsocksport" ] && shadowsocksport="8989"
+    read -p "(Default port: 12948):" shadowsocksport
+    [ -z "$shadowsocksport" ] && shadowsocksport="12948"
     expr $shadowsocksport + 0 &>/dev/null
     if [ $? -eq 0 ]; then
         if [ $shadowsocksport -ge 1 ] && [ $shadowsocksport -le 65535 ]; then
@@ -134,23 +134,23 @@ function pre_install(){
 # Download files
 function download_files(){
     # Download libsodium file
-    if ! wget --no-check-certificate -O libsodium-1.0.12.tar.gz https://github.com/jedisct1/libsodium/releases/download/1.0.12/libsodium-1.0.12.tar.gz; then
+    if ! wget --no-check-certificate -O libsodium-1.0.15.tar.gz https://github.com/jedisct1/libsodium/releases/download/1.0.15/libsodium-1.0.15.tar.gz; then
         echo "Failed to download libsodium file!"
         exit 1
     fi
     # Download ShadowsocksR file
-    # if ! wget --no-check-certificate -O manyuser.zip https://github.com/breakwa11/shadowsocks/archive/manyuser.zip; then
+    # if ! wget --no-check-certificate -O manyuser.zip https://raw.githubusercontent.com/yayaye/ssr-backup/master/ShadowsocksR-manyuser.zip; then
         # echo "Failed to download ShadowsocksR file!"
         # exit 1
     # fi
     # Download ShadowsocksR chkconfig file
     if [ "$OS" == 'CentOS' ]; then
-        if ! wget --no-check-certificate https://raw.githubusercontent.com/91yun/shadowsocks_install/master/shadowsocksR -O /etc/init.d/shadowsocks; then
+        if ! wget --no-check-certificate https://raw.githubusercontent.com/yayaye/shadowsocksr-manyuser/master/shadowsocksR -O /etc/init.d/shadowsocks; then
             echo "Failed to download ShadowsocksR chkconfig file!"
             exit 1
         fi
     else
-        if ! wget --no-check-certificate https://raw.githubusercontent.com/91yun/shadowsocks_install/master/shadowsocksR-debian -O /etc/init.d/shadowsocks; then
+        if ! wget --no-check-certificate https://raw.githubusercontent.com/yayaye/shadowsocksr-manyuser/master/shadowsocksR-debian -O /etc/init.d/shadowsocks; then
             echo "Failed to download ShadowsocksR chkconfig file!"
             exit 1
         fi
@@ -214,7 +214,7 @@ function config_shadowsocks(){
     "timeout": 120,
     "udp_timeout": 60,
     "method": "chacha20",
-    "protocol": "auth_aes128_sha1",
+    "protocol": "auth_aes128_md5",
     "protocol_param": "",
     "obfs": "tls1.2_ticket_auth",
     "obfs_param": "",
@@ -231,18 +231,19 @@ EOF
 # Install ShadowsocksR
 function install_ss(){
     # Install libsodium
-    tar zxf libsodium-1.0.12.tar.gz
-    cd $cur_dir/libsodium-1.0.12
+    tar zxf libsodium-1.0.15.tar.gz
+    cd $cur_dir/libsodium-1.0.15
     ./configure && make && make install
     echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf
     ldconfig
     # Install ShadowsocksR
     cd $cur_dir
     # unzip -q manyuser.zip
-    # mv shadowsocks-manyuser/shadowsocks /usr/local/
-	git clone https://github.com/shadowsocksr/shadowsocksr.git /usr/local/shadowsocks
+    # mv shadowsocksr-manyuser-master/shadowsocks /usr/local/
+	git clone https://github.com/yayaye/shadowsocksr-manyuser.git /usr/local/shadowsocks
     if [ -f /usr/local/shadowsocks/server.py ]; then
         chmod +x /etc/init.d/shadowsocks
+		chmod +x /usr/local/shadowsocks/shadowsocks/server.py
         # Add run on system start up
         if [ "$OS" == 'CentOS' ]; then
             chkconfig --add shadowsocks
@@ -280,8 +281,8 @@ function install_cleanup(){
     cd $cur_dir
     rm -f manyuser.zip
     rm -rf shadowsocks-manyuser
-    rm -f libsodium-1.0.12.tar.gz
-    rm -rf libsodium-1.0.12
+    rm -f libsodium-1.0.15.tar.gz
+    rm -rf libsodium-1.0.15
 }
 
 
@@ -346,3 +347,4 @@ uninstall)
     echo "Usage: `basename $0` {install|uninstall}"
     ;;
 esac
+
